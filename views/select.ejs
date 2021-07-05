@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>회원정보검색</h1>
+    <table border="1">
+        <tr>
+            <th>ID</th>
+            <th>PW</th>
+            <th>NAME</th>
+            <th>ADDRESS</th>
+            <th>STATUS</th>
+            <th>TEL</th>
+            <th>EMAIL</th>
+            <th>JOIN_DATE</th>
+        </tr>
+
+        <%for(let i = 0; i < in_row.length; i++){%>
+            <tr align="center">
+                <td><%=in_row[i].mem_id%></td>
+                <td><%=in_row[i].mem_pw%></td>
+                <td><%=in_row[i].mem_name%></td>
+                <td><%=in_row[i].mem_addr%></td>
+                <td><%=in_row[i].mem_status%></td>
+                <td><%=in_row[i].mem_tel%></td>
+                <td><%=in_row[i].mem_email%></td>
+                <td><%=in_row[i].mem_join_date%></td>
+                
+            </tr>
+        <%}%>
+    </table>
+    <a href="http://127.0.0.1:5501/public/Main.html">메인페이지로</a>
+</body>
+</html>

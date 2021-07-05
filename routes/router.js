@@ -7,14 +7,15 @@ router.post("/Login", function(request, response){
     let id = request.body.id;
     let pw = request.body.pw;
 
-        conn.connect(); 
-    let sql = "select * from members where id = ?";
+    conn.connect();
+
+    let sql = "select * from members where mem_id = ?";
 
     conn.query(sql, [id], function(err, row){
         if(row.length > 0){
-            if(row[0].pw === pw){
+            if(row[0].mem_pw === pw){
                 response.render("loginS", {
-                    id : id
+                    in_id : id
                 });
             } else{
                 response.redirect("http://127.0.0.1:5501/public/LoginF.html");
@@ -35,16 +36,44 @@ router.post("/Join", function(request, response){
     let tel = request.body.tel;
     let email = request.body.email;
     
+    conn.connect();
+
     let sql = "insert into members values(?, ?, ?, ?, ?, ?, ?, now())";
 
     conn.query(sql, [id, pw, name, address, health, tel, email], function(err, row){
         if(!err){
-            console.log("입력성공");
             response.redirect("http://127.0.0.1:5501/public/Main.html");
         } else{
             console.log("입력실패"+err);
         }
     });
+    conn.end();
+});
+
+router.get("/Dise", function(request, response){
+    conn.connect();
+
+    let sql = "select * from disease";
+
+    conn.query(sql, function(err, row){
+        response.render("dise", {
+            in_row : row
+        });
+    });
+    conn.end();
+});
+
+router.get("/Select", function(request, response){
+    conn.connect();
+    
+    let sql = "select * from members";
+
+    conn.query(sql, function(err, row){
+        response.render("select", {
+            in_row : row
+        });
+    });
+    conn.end();
 });
 
 module.exports = router;

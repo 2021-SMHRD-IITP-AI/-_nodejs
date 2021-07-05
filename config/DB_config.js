@@ -5,7 +5,7 @@ const conn = mysql.createConnection({
     user : "root",
     password : "1234",
     port : "3306",
-    database : "project_one_db"
+    database : "one_project_db"
 });
 
 module.exports = conn;
