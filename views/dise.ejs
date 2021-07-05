@@ -15,11 +15,11 @@
             <th>질환정보</th>
         </tr>
 
-        <%for(let i = 0; i < row.length; i++){%>
+        <%for(let i = 0; i < in_row.length; i++){%>
             <tr>
-                <td><%=in_row.[i].no%></td>
-                <td><%=in_row[i].name%></td>
-                <td><%=in_row[i].notice%></td>
+                <td><%=in_row[i].dise_no%></td>
+                <td><%=in_row[i].dise_name%></td>
+                <td><%=in_row[i].dise_notice%></td>
             </tr>
         <%}%>
     </table>
