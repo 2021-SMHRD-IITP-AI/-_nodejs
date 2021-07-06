@@ -31,23 +31,26 @@ router.post("/Join", function(request, response){
     let id = request.body.id;
     let pw = request.body.pw;
     let name = request.body.name;
-    let address = request.body.address;
-    let health = request.body.health;
+    let nick = request.body.nick;
     let tel = request.body.tel;
     let email = request.body.email;
+    let address = request.body.address;
+    let birth = request.body.birth;
+    let gender = request.body.gender;
+    let status = request.body.status;
     
-    conn.connect();
+    // conn.connect();
 
-    let sql = "insert into members values(?, ?, ?, ?, ?, ?, ?, now())";
+    let sql = "insert into members values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now())";
 
-    conn.query(sql, [id, pw, name, address, health, tel, email], function(err, row){
+    conn.query(sql, [id, pw, name, nick, tel, email, address, birth, gender, status], function(err, row){
         if(!err){
-            response.redirect("http://127.0.0.1:5501/public/Main.html");
+            response.redirect("http://222.102.104.135:3000/Main.html");
         } else{
             console.log("입력실패"+err);
         }
     });
-    conn.end();
+    // conn.end();
 });
 
 router.get("/Dise", function(request, response){
@@ -65,13 +68,43 @@ router.get("/Dise", function(request, response){
 
 router.get("/Select", function(request, response){
     conn.connect();
-    
+
     let sql = "select * from members";
 
     conn.query(sql, function(err, row){
         response.render("select", {
             in_row : row
         });
+    });
+    conn.end();
+});
+
+router.get("/Ingre", function(request, response){
+    conn.connect();
+
+    let sql = "select * from ingredient";
+
+    conn.query(sql, function(err, row){
+        response.render("ingre", {
+            in_row : row
+        });
+    });
+    conn.end();
+});
+
+router.post("/Note", function(request, response){
+    let note = request.body.note;
+
+    conn.connect();
+
+    let sql = "insert into notepad values(?, now())";
+
+    conn.query(sql, [note], function(err, row){
+        if(!err){
+            response.redirect("http://127.0.0.1:5501/public/Main.html");
+        } else{
+            console.log("입력실패"+err);
+        }
     });
     conn.end();
 });
