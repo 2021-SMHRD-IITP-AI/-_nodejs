@@ -3,20 +3,26 @@ const router = express.Router();
 
 const conn = require("../config/DB_config.js");
 
+const fs = require("fs");
+
 router.post("/Login", function(request, response){
     let id = request.body.id;
     let pw = request.body.pw;
 
     conn.connect();
-
     let sql = "select * from members where mem_id = ?";
 
     conn.query(sql, [id], function(err, row){
         if(row.length > 0){
             if(row[0].mem_pw === pw){
+                request.session.user = {
+                    "id" : id
+                }
+
                 response.render("loginS", {
-                    in_id : id
+                    id : id
                 });
+
             } else{
                 response.redirect("http://127.0.0.1:5501/public/LoginF.html");
             }
@@ -31,30 +37,29 @@ router.post("/Join", function(request, response){
     let id = request.body.id;
     let pw = request.body.pw;
     let name = request.body.name;
-    let nick = request.body.nick;
     let tel = request.body.tel;
     let email = request.body.email;
     let address = request.body.address;
     let birth = request.body.birth;
-    let gender = request.body.gender;
     let status = request.body.status;
-    
-    // conn.connect();
 
-    let sql = "insert into members values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now())";
+    let check = {'check':'NO'};
 
-    conn.query(sql, [id, pw, name, nick, tel, email, address, birth, gender, status], function(err, row){
+    let sql = "insert into members values(?, ?, ?, ?, ?, ?, ?, ?, now())";
+
+    conn.query(sql, [id, pw, name, tel, email, address, birth, status], function(err, row){
         if(!err){
-            response.redirect("http://222.102.104.135:3000/Main.html");
+            if(id == id){
+                check.check = 'true';  
+            } 
         } else{
             console.log("입력실패"+err);
         }
+        response.send(check);
     });
-    // conn.end();
 });
 
 router.get("/Dise", function(request, response){
-    conn.connect();
 
     let sql = "select * from disease";
 
@@ -63,11 +68,9 @@ router.get("/Dise", function(request, response){
             in_row : row
         });
     });
-    conn.end();
 });
 
 router.get("/Select", function(request, response){
-    conn.connect();
 
     let sql = "select * from members";
 
@@ -76,11 +79,9 @@ router.get("/Select", function(request, response){
             in_row : row
         });
     });
-    conn.end();
 });
 
 router.get("/Ingre", function(request, response){
-    conn.connect();
 
     let sql = "select * from ingredient";
 
@@ -89,24 +90,35 @@ router.get("/Ingre", function(request, response){
             in_row : row
         });
     });
-    conn.end();
 });
 
 router.post("/Note", function(request, response){
     let note = request.body.note;
 
-    conn.connect();
-
     let sql = "insert into notepad values(?, now())";
 
     conn.query(sql, [note], function(err, row){
         if(!err){
-            response.redirect("http://127.0.0.1:5501/public/Main.html");
+            response.redirect("http://222.102.104.135:3000/main");
         } else{
             console.log("입력실패"+err);
         }
     });
-    conn.end();
+});
+
+router.get("/Main", function(request, response){
+    response.render("main", {
+        user : request.session.user
+    });
+});
+
+router.get("/Dosirak", function(request, response){
+    fs.readFile('../img\img5.png', function(error, data){
+        response.writeHead(200, {"Content-Type" : "image/png"});
+        response.write(data);
+        response.end();
+    });
+    
 });
 
 module.exports = router;

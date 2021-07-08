@@ -1,5 +1,5 @@
 {
-  "name": "0624express",
+  "name": "project_one",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -11,6 +11,8 @@
   "dependencies": {
     "ejs": "^3.1.6",
     "express": "^4.17.1",
-    "express-mysql": "0.0.1"
+    "express-mysql": "0.0.1",
+    "express-mysql-session": "^2.1.6",
+    "express-session": "^1.17.2"
   }
 }
