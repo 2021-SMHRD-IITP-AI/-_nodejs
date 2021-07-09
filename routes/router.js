@@ -1,10 +1,10 @@
 const express = require("express");
 const router = express.Router();
-
+// const mysql = require("mysql");
 const conn = require("../config/DB_config.js");
 
 const fs = require("fs");
-const { format, addListener } = require("../config/DB_config.js");
+
 
 let memberdto = new Object;
 
@@ -13,6 +13,8 @@ router.post("/Login", function(request, response){
     let pw = request.body.pw;
 
     let jsonData = JSON.stringify(memberdto);
+    
+    conn.connect();
 
     let sql = "select * from members where mem_id = ?";
 
@@ -20,20 +22,15 @@ router.post("/Login", function(request, response){
         if(row.length > 0){
                 if(pw == row[0].mem_pw){
                     response.send(jsonData);
-
-                    // request.session.user = {
-                    //     "id" : id
-                    // }    
-                    // response.render("loginS", {
-                    //     id : id
-                    // });
                     console.log("로그인 성공");
                     console.log(jsonData);
                 } else{
                     console.log("로그인 실패" + err);
+                    
                 }
         } else{
             console.log("로그인 실패" + err);
+            
         }
     });
 });
@@ -50,16 +47,10 @@ router.post("/Join", function(request, response){
 
     memberdto.id = id;
     memberdto.pw = pw;
-    memberdto.name = name;
-    memberdto.tel = tel;
-    memberdto.email = email;
-    memberdto.address = address;
-    memberdto.birth = birth;
-    memberdto.status = status;
+
+    conn.connet();
 
     let checkJoin = {'check':'NO'};
-
-    let sql2 = "select * from members where = mem_id = ?";
 
     let sql = "insert into members values(?, ?, ?, ?, ?, ?, ?, ?, now())";
 
@@ -67,14 +58,12 @@ router.post("/Join", function(request, response){
         if(!err){
             if(id == id){
                 checkJoin.check = 'true';
-                console.log(memberdto.id);                    
             } else{
                 console.log("입력실패"+err);
             }
             response.send(checkJoin);
         }   
     });
-    conn.end();
 });
 
 router.get("/Dise", function(request, response){
@@ -112,8 +101,6 @@ router.get("/Ingre", function(request, response){
 
 router.post("/Note", function(request, response){
     let note = request.body.note;
-        
-    let user =  request.session.user
 
     let sql = "insert into notepad values (?, now(), ?)";
 
@@ -128,17 +115,10 @@ router.post("/Note", function(request, response){
 
 router.get("/Main", function(request, response){
     response.render("main", {
-        user : request.session.user
+        
     });
 });
 
-router.get("/logout", function(request, response){
-    delete request.session.user;
-
-    response.render("main", {
-        user : undefined
-    });
-});
 
 router.get("/Dosirak", function(request, response){
     console.log(response);
