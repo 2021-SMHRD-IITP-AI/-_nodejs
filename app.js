@@ -6,16 +6,9 @@ const ejs = require("ejs");
 const body = require("body-parser");
 app.use(body.urlencoded({extended:true}));
 
-// app.use(body.json());
-
-// app.use(function(req, res, next){
-//     res.header("Access-Control-Allow-Origin", "*");
-//     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-//     next();
-// });
-
 const session = require("express-session");
 const mysql_session = require("express-mysql-session");
+const { request, response } = require("express");
 
 let conn = {
     host : "localhost",
@@ -35,6 +28,18 @@ app.use(session({
 }));
 
 app.set("view engine", "ejs");
+
+//추가
+app.use(express.static('public')); // 1번 미들웨어
+app.use((req, res, next) => {
+    // 2번 미들웨어
+    next();
+});
+app.get('/', (req, res) => {
+    // 3번 미들웨어
+    res.status(200).sendFile(__dirname+'/Dorirak.html');
+});
+// -------------------------------------------------------
 
 app.use(router);
 app.listen(3000);

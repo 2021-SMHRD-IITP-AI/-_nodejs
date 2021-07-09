@@ -4,33 +4,38 @@ const router = express.Router();
 const conn = require("../config/DB_config.js");
 
 const fs = require("fs");
+const { format, addListener } = require("../config/DB_config.js");
+
+let memberdto = new Object;
 
 router.post("/Login", function(request, response){
     let id = request.body.id;
     let pw = request.body.pw;
 
-    conn.connect();
+    let jsonData = JSON.stringify(memberdto);
+
     let sql = "select * from members where mem_id = ?";
 
     conn.query(sql, [id], function(err, row){
         if(row.length > 0){
-            if(row[0].mem_pw === pw){
-                request.session.user = {
-                    "id" : id
+                if(pw == row[0].mem_pw){
+                    response.send(jsonData);
+
+                    // request.session.user = {
+                    //     "id" : id
+                    // }    
+                    // response.render("loginS", {
+                    //     id : id
+                    // });
+                    console.log("로그인 성공");
+                    console.log(jsonData);
+                } else{
+                    console.log("로그인 실패" + err);
                 }
-
-                response.render("loginS", {
-                    id : id
-                });
-
-            } else{
-                response.redirect("http://127.0.0.1:5501/public/LoginF.html");
-            }
         } else{
-            response.redirect("http://127.0.0.1:5501/public/LoginF.html");
+            console.log("로그인 실패" + err);
         }
     });
-    conn.end();
 });
 
 router.post("/Join", function(request, response){
@@ -43,20 +48,33 @@ router.post("/Join", function(request, response){
     let birth = request.body.birth;
     let status = request.body.status;
 
-    let check = {'check':'NO'};
+    memberdto.id = id;
+    memberdto.pw = pw;
+    memberdto.name = name;
+    memberdto.tel = tel;
+    memberdto.email = email;
+    memberdto.address = address;
+    memberdto.birth = birth;
+    memberdto.status = status;
+
+    let checkJoin = {'check':'NO'};
+
+    let sql2 = "select * from members where = mem_id = ?";
 
     let sql = "insert into members values(?, ?, ?, ?, ?, ?, ?, ?, now())";
 
     conn.query(sql, [id, pw, name, tel, email, address, birth, status], function(err, row){
         if(!err){
             if(id == id){
-                check.check = 'true';  
-            } 
-        } else{
-            console.log("입력실패"+err);
-        }
-        response.send(check);
+                checkJoin.check = 'true';
+                console.log(memberdto.id);                    
+            } else{
+                console.log("입력실패"+err);
+            }
+            response.send(checkJoin);
+        }   
     });
+    conn.end();
 });
 
 router.get("/Dise", function(request, response){
@@ -94,10 +112,12 @@ router.get("/Ingre", function(request, response){
 
 router.post("/Note", function(request, response){
     let note = request.body.note;
+        
+    let user =  request.session.user
 
-    let sql = "insert into notepad values(?, now())";
+    let sql = "insert into notepad values (?, now(), ?)";
 
-    conn.query(sql, [note], function(err, row){
+    conn.query(sql, [note, user.id], function(err, row){
         if(!err){
             response.redirect("http://222.102.104.135:3000/main");
         } else{
@@ -112,13 +132,17 @@ router.get("/Main", function(request, response){
     });
 });
 
-router.get("/Dosirak", function(request, response){
-    fs.readFile('../img\img5.png', function(error, data){
-        response.writeHead(200, {"Content-Type" : "image/png"});
-        response.write(data);
-        response.end();
+router.get("/logout", function(request, response){
+    delete request.session.user;
+
+    response.render("main", {
+        user : undefined
     });
-    
 });
+
+router.get("/Dosirak", function(request, response){
+    console.log(response);
+console.log(request);
+})
 
 module.exports = router;
