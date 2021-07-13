@@ -5,7 +5,6 @@ const router = express.Router();
 // 인식오류로 직접 연결
 const mysql = require("mysql");
 
-
 const fs = require("fs");
 
 let memberdto = new Object;
@@ -71,11 +70,12 @@ router.post("/Join", function(request, response){
 
     conn.query(sql, [id, pw, name, tel, email, address, birth, status], function(err, row){
         if(!err){
-            if(id != ""){
+            if(id !== ""){
                 checkJoin.check = 'true';
-                console.log(id + "가입성공");             
+                console.log(id + "가입성공"+row[0].mem_status);             
             } else{
-                console.log("입력실패"+err);
+                checkJoin.check = 'false';
+                console.log("Join: 가입실패"+err);
             }
             response.send(checkJoin);
         }   
@@ -83,8 +83,7 @@ router.post("/Join", function(request, response){
     conn.end();
 });
 
-router.get("/Dise", function(request, response){
-
+router.post("/Dise", function(request, response){
     const conn = mysql.createConnection({
         host : "localhost",
         user : "root",
@@ -93,49 +92,36 @@ router.get("/Dise", function(request, response){
         database : "one_project_db"
     });
 
-    if(request.body.status == "고혈압"){
-        let sql = "select * from disease where dise_no = 1";
+    let sql = "select * from disease"
 
-        conn.query(sql, function(err, row){
-            if(!err){
-                response.send({"result" : row});
-                console.log("조회성공");
-            } else{
-                console.log("조회실패"+err);
-            }
-        });
-    } else if(request.body.status == "당뇨"){
-        let sql = "select * from disease where dise_no = 2";
+    conn.query(sql, function(err, row){
+        let diseData = new Object();
+        diseData.recom = row[0].dise_recom;
+        diseData.warn = row[0].dise_warn;
 
-        conn.query(sql, function(err, row){
-            if(!err){
-                response.send({"result" : row});
-                console.log("조회성공");
-            } else{
-                console.log("조회실패"+err);
-            }
-        });
-    } else if(request.body.status == "비만"){
-        let sql = "select * from disease where dise_no = 3";
-
-        conn.query(sql, function(err, row){
-            if(!err){
-                response.send({"result" : row});
-                console.log("조회성공");
-            } else{
-                console.log("조회실패"+err);
-            }
-        });
-    }
+        if(!err){
+            console.log(diseData);
+            response.send(diseData);
+            console.log("Dise : 조회성공");
+        } else{
+            console.log("Dise : 조회실패"+err);
+        }
+    });
     conn.end();
 });
 
 router.post("/NoteIn", function(request, response){
     let note_workout = request.body.note_workout;
     let note_health = request.body.note_health;
-    let note_text = request.body.note_text
+    let note_text = request.body.note_text;
+    let id = request.body.mem_id;
+
+    console.log(request.body.note_workout +"앱에서 보낸 운동여부");
+    console.log(request.body.note_health +"앱에서 보낸 건강상태");
+    console.log(request.body.note_text +"앱에서 보낸 건강일지");
+    console.log(request.body.mem_id +"앱에서 보낸 아이디");
         
-    let user =  request.session.user
+    let check = {'check':'NO'};
 
     const conn = mysql.createConnection({
         host : "localhost",
@@ -145,14 +131,27 @@ router.post("/NoteIn", function(request, response){
         database : "one_project_db"
     });
 
-    let sql = "insert into notepad values (?, ?, ?, now(), ?)";
+    let sql = "insert into notepad(note_workout, note_health, note_text, mem_id) values (?, ?, ?, now(), ?)";
 
-    conn.query(sql, [note_workout, note_health, note_text, user.id], function(err, row){
+    conn.query(sql, [note_workout, note_health, note_text, id], function(err, row){
+        console.log("NoteIn"+ row);
         if(!err){
-            console.log("입력성공");
+            if(row.affectedRows > 0){
+                notepadlist.note_workout;
+                notepadlist.note_health;
+                notepadlist.note_text;
+                jsonNotepadList.push(notepadlist);
+                check.check = "true";
+                console.log("NoteIn : 입력성공");
+            } else{
+                check.check = "no";
+                console.log("NoteIn: 입력실패"+err);
+            }                
         } else{
-            console.log("입력실패"+err);
+            check.check = "no";
+            console.log("NoteIn: 입력실패"+err);
         }
+        response.send(check);
     });
     conn.end();
 });
@@ -169,11 +168,15 @@ router.post("/NoteOut", function(request, response){
     let sql = "select * from notepad";
 
     conn.query(sql, function(err, row){
-        response.send({"result" : row});
+        if(!err){
+            response.send({"result" : row});
+            console.log("NoteOut : 출력성공");
+        } else{
+            console.log("NoteOut : 출력실패" +err);
+        }
     });
     conn.end();
 });
-
 
 router.post("/FindPW", function(request, response){
     let id = request.body.id;
@@ -191,9 +194,9 @@ router.post("/FindPW", function(request, response){
     let sql = "select * from members where mem_id = ?";
 
     conn.query(sql, [id], function(err, row){
-        if(id == row[0].id && email == row[0].email && tel == row[0].tel){
+        if(id == row[0].mem_id && email == row[0].mem_email && tel == row[0].mem_tel){
             console.log("id, email, tel 일치");
-            response.send({"result" : row[0].mem_pw});
+            response.send(row[0].mem_pw);
         } else{
             console.log("id, eaml, tel 불일치" + err);
         }
@@ -217,9 +220,9 @@ router.post("/ChangePW", function(request, response){
 
     conn.query(sql, [update_data, id], function(err, row){
         if(!err){
-            console.log(id + "수정성공");
+            console.log(id + "ChangePW : 수정성공");
         } else{
-            console.log("수정실패" + err);
+            console.log("ChangePW : 수정실패" + err);
         }
     });
     conn.end();
@@ -237,14 +240,14 @@ router.post("/FindID", function(request, response){
         database : "one_project_db"
     });
 
-    let sql = "select * from members where mem_email = ?";
+    let sql = "select * from members where mem_email = ? and mem_tel = ?";
 
-    conn.query(sql, [email], function(err, row){
-        if(email == row[0].email && tel == row[0].tel){
-            console.log("email, tel 일치");
-            response.send({"result":row[0].mem_id});
+    conn.query(sql, [email, tel], function(err, row){
+        if(email == row[0].mem_email && tel == row[0].mem_tel){
+            console.log("email");
+            response.send(row[0].mem_id);
         } else{
-            console.log("id, eaml, tel 불일치" + err);
+            console.log("email" + err);
         }
     });
     conn.end();
@@ -269,44 +272,5 @@ router.get("/Ingre", function(request, response){
     });
     conn.end();
 });
-
-// router.get("/Select", function(request, response){
-
-//     const conn = mysql.createConnection({
-//         host : "localhost",
-//         user : "root",
-//         password : "1234",
-//         port : "3306",
-//         database : "one_project_db"
-//     });
-
-//     let sql = "select * from members";
-
-//     conn.query(sql, function(err, row){
-//         response.render("select", {
-//             in_row : row
-//         });
-//     });
-//     conn.end();
-// });
-
-// router.get("/Main", function(request, response){
-//     response.render("main", {
-//         user : request.session.user
-//     });
-// });
-
-// router.get("/logout", function(request, response){
-//     delete request.session.user;
-
-//     response.render("main", {
-//         user : undefined
-//     });
-// });
-
-// router.get("/Dosirak", function(request, response){
-//     console.log(response);
-// console.log(request);
-// })
 
 module.exports = router;
