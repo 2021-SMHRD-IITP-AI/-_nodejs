@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 // const conn = require("../config/DB_config.js");
+// 인식오류로 직접 연결
 const mysql = require("mysql");
 
 
@@ -12,8 +13,6 @@ let memberdto = new Object;
 router.post("/Login", function(request, response){
     let id = request.body.id;
     let pw = request.body.pw;
-
-    // let jsonData = JSON.stringify(memberdto);
 
     const conn = mysql.createConnection({
         host : "localhost",
@@ -26,13 +25,15 @@ router.post("/Login", function(request, response){
     let sql = "select * from members where mem_id = ?";
 
     conn.query(sql, [id], function(err, row){
+        console.log(row.length);
+        console.log(row[0].mem_id);
         if(row.length > 0){
             memberdto.id = id;
             memberdto.pw = pw;
             let jsonData = JSON.stringify(memberdto);
             if(pw == row[0].mem_pw){
                 response.send(jsonData);
-                console.log("로그인 성공");
+                console.log(id + "로그인 성공");
                 } else{
                     console.log("로그인 실패" + err);
                 }
@@ -70,9 +71,9 @@ router.post("/Join", function(request, response){
 
     conn.query(sql, [id, pw, name, tel, email, address, birth, status], function(err, row){
         if(!err){
-            if(id == id){
+            if(id != ""){
                 checkJoin.check = 'true';
-                console.log("가입성공");             
+                console.log(id + "가입성공");             
             } else{
                 console.log("입력실패"+err);
             }
@@ -84,27 +85,180 @@ router.post("/Join", function(request, response){
 
 router.get("/Dise", function(request, response){
 
-    let sql = "select * from disease";
-
-    conn.query(sql, function(err, row){
-        response.render("dise", {
-            in_row : row
-        });
+    const conn = mysql.createConnection({
+        host : "localhost",
+        user : "root",
+        password : "1234",
+        port : "3306",
+        database : "one_project_db"
     });
+
+    if(request.body.status == "고혈압"){
+        let sql = "select * from disease where dise_no = 1";
+
+        conn.query(sql, function(err, row){
+            if(!err){
+                response.send({"result" : row});
+                console.log("조회성공");
+            } else{
+                console.log("조회실패"+err);
+            }
+        });
+    } else if(request.body.status == "당뇨"){
+        let sql = "select * from disease where dise_no = 2";
+
+        conn.query(sql, function(err, row){
+            if(!err){
+                response.send({"result" : row});
+                console.log("조회성공");
+            } else{
+                console.log("조회실패"+err);
+            }
+        });
+    } else if(request.body.status == "비만"){
+        let sql = "select * from disease where dise_no = 3";
+
+        conn.query(sql, function(err, row){
+            if(!err){
+                response.send({"result" : row});
+                console.log("조회성공");
+            } else{
+                console.log("조회실패"+err);
+            }
+        });
+    }
+    conn.end();
 });
 
-router.get("/Select", function(request, response){
+router.post("/NoteIn", function(request, response){
+    let note_workout = request.body.note_workout;
+    let note_health = request.body.note_health;
+    let note_text = request.body.note_text
+        
+    let user =  request.session.user
 
-    let sql = "select * from members";
+    const conn = mysql.createConnection({
+        host : "localhost",
+        user : "root",
+        password : "1234",
+        port : "3306",
+        database : "one_project_db"
+    });
+
+    let sql = "insert into notepad values (?, ?, ?, now(), ?)";
+
+    conn.query(sql, [note_workout, note_health, note_text, user.id], function(err, row){
+        if(!err){
+            console.log("입력성공");
+        } else{
+            console.log("입력실패"+err);
+        }
+    });
+    conn.end();
+});
+
+router.post("/NoteOut", function(request, response){
+    const conn = mysql.createConnection({
+        host : "localhost",
+        user : "root",
+        password : "1234",
+        port : "3306",
+        database : "one_project_db"
+    });
+
+    let sql = "select * from notepad";
 
     conn.query(sql, function(err, row){
-        response.render("select", {
-            in_row : row
-        });
+        response.send({"result" : row});
     });
+    conn.end();
+});
+
+
+router.post("/FindPW", function(request, response){
+    let id = request.body.id;
+    let email = request.body.email;
+    let tel = request.body.tel;
+
+    const conn = mysql.createConnection({
+        host : "localhost",
+        user : "root",
+        password : "1234",
+        port : "3306",
+        database : "one_project_db"
+    });
+
+    let sql = "select * from members where mem_id = ?";
+
+    conn.query(sql, [id], function(err, row){
+        if(id == row[0].id && email == row[0].email && tel == row[0].tel){
+            console.log("id, email, tel 일치");
+            response.send({"result" : row[0].mem_pw});
+        } else{
+            console.log("id, eaml, tel 불일치" + err);
+        }
+    });
+    conn.end();
+});
+
+router.post("/ChangePW", function(request, response){
+    let id = request.body.id;
+    let update_data = request.body.update_data;
+
+    const conn = mysql.createConnection({
+        host : "localhost",
+        user : "root",
+        password : "1234",
+        port : "3306",
+        database : "one_project_db"
+    });
+
+    let sql = "update members set mem_pw = ? where mem_id = ?"
+
+    conn.query(sql, [update_data, id], function(err, row){
+        if(!err){
+            console.log(id + "수정성공");
+        } else{
+            console.log("수정실패" + err);
+        }
+    });
+    conn.end();
+});
+
+router.post("/FindID", function(request, response){
+    let email = request.body.email;
+    let tel = request.body.tel;
+
+    const conn = mysql.createConnection({
+        host : "localhost",
+        user : "root",
+        password : "1234",
+        port : "3306",
+        database : "one_project_db"
+    });
+
+    let sql = "select * from members where mem_email = ?";
+
+    conn.query(sql, [email], function(err, row){
+        if(email == row[0].email && tel == row[0].tel){
+            console.log("email, tel 일치");
+            response.send({"result":row[0].mem_id});
+        } else{
+            console.log("id, eaml, tel 불일치" + err);
+        }
+    });
+    conn.end();
 });
 
 router.get("/Ingre", function(request, response){
+
+    const conn = mysql.createConnection({
+        host : "localhost",
+        user : "root",
+        password : "1234",
+        port : "3306",
+        database : "one_project_db"
+    });
 
     let sql = "select * from ingredient";
 
@@ -113,41 +267,46 @@ router.get("/Ingre", function(request, response){
             in_row : row
         });
     });
+    conn.end();
 });
 
-router.post("/Note", function(request, response){
-    let note = request.body.note;
-        
-    let user =  request.session.user
+// router.get("/Select", function(request, response){
 
-    let sql = "insert into notepad values (?, now(), ?)";
+//     const conn = mysql.createConnection({
+//         host : "localhost",
+//         user : "root",
+//         password : "1234",
+//         port : "3306",
+//         database : "one_project_db"
+//     });
 
-    conn.query(sql, [note, user.id], function(err, row){
-        if(!err){
-            response.redirect("http://222.102.104.135:3000/main");
-        } else{
-            console.log("입력실패"+err);
-        }
-    });
-});
+//     let sql = "select * from members";
 
-router.get("/Main", function(request, response){
-    response.render("main", {
-        user : request.session.user
-    });
-});
+//     conn.query(sql, function(err, row){
+//         response.render("select", {
+//             in_row : row
+//         });
+//     });
+//     conn.end();
+// });
 
-router.get("/logout", function(request, response){
-    delete request.session.user;
+// router.get("/Main", function(request, response){
+//     response.render("main", {
+//         user : request.session.user
+//     });
+// });
 
-    response.render("main", {
-        user : undefined
-    });
-});
+// router.get("/logout", function(request, response){
+//     delete request.session.user;
 
-router.get("/Dosirak", function(request, response){
-    console.log(response);
-console.log(request);
-})
+//     response.render("main", {
+//         user : undefined
+//     });
+// });
+
+// router.get("/Dosirak", function(request, response){
+//     console.log(response);
+// console.log(request);
+// })
 
 module.exports = router;
