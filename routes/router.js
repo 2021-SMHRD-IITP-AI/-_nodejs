@@ -169,7 +169,7 @@ router.post("/NoteOut", function(request, response){
 
     conn.query(sql, function(err, row){
         if(!err){
-            response.send({"result" : row});
+            response.send(row);
             console.log("NoteOut : 출력성공");
         } else{
             console.log("NoteOut : 출력실패" +err);
@@ -191,14 +191,14 @@ router.post("/FindPW", function(request, response){
         database : "one_project_db"
     });
 
-    let sql = "select * from members where mem_id = ?";
+    let sql = "select * from members where mem_id = ? and mem_email = ? and mem_tel = ?";
 
-    conn.query(sql, [id], function(err, row){
+    conn.query(sql, [id, email, tel], function(err, row){
         if(id == row[0].mem_id && email == row[0].mem_email && tel == row[0].mem_tel){
-            console.log("id, email, tel 일치");
+            console.log("FindPW : id, email, tel 일치");
             response.send(row[0].mem_pw);
         } else{
-            console.log("id, eaml, tel 불일치" + err);
+            console.log("FindPW : id, eaml, tel 불일치" + err);
         }
     });
     conn.end();
@@ -220,7 +220,9 @@ router.post("/ChangePW", function(request, response){
 
     conn.query(sql, [update_data, id], function(err, row){
         if(!err){
-            console.log(id + "ChangePW : 수정성공");
+            if(id == row[0].mem_id){
+                console.log(id + "ChangePW : 수정성공");
+            }
         } else{
             console.log("ChangePW : 수정실패" + err);
         }
@@ -244,10 +246,10 @@ router.post("/FindID", function(request, response){
 
     conn.query(sql, [email, tel], function(err, row){
         if(email == row[0].mem_email && tel == row[0].mem_tel){
-            console.log("email");
+            console.log("FindID : email, tel 일치");
             response.send(row[0].mem_id);
         } else{
-            console.log("email" + err);
+            console.log("FindID : email, tel 불일치" + err);
         }
     });
     conn.end();
