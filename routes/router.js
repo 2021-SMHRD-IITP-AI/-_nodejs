@@ -29,7 +29,12 @@ router.post("/Login", function(request, response){
         if(row.length > 0){
             memberdto.id = id;
             memberdto.pw = pw;
+            memberdto.name = row[0].mem_name;
+            memberdto.tel = row[0].mem_tel;
+            memberdto.address = row[0].mem_address;
+            memberdto.email = row[0].mem_email;
             let jsonData = JSON.stringify(memberdto);
+            console.log(jsonData);
             if(pw == row[0].mem_pw){
                 response.send(jsonData);
                 console.log(id + "로그인 성공");
@@ -134,13 +139,8 @@ router.post("/NoteIn", function(request, response){
     let sql = "insert into notepad(note_workout, note_health, note_text, note_date, mem_id) values (?, ?, ?, now(), ?)";
 
     conn.query(sql, [note_workout, note_health, note_text, id], function(err, row){
-        console.log("NoteIn"+ row);
         if(!err){
             if(row.affectedRows > 0){
-                notepadlist.note_workout;
-                notepadlist.note_health;
-                notepadlist.note_text;
-                jsonNotepadList.push(notepadlist);
                 check.check = "true";
                 console.log("NoteIn : 입력성공");
             } else{
@@ -268,12 +268,14 @@ router.post("/Exit", function(request, response){
 
     let checkExit = {'check':'NO'};
 
-    let sql = "delete from members where mem_id = ?;";
+    let sql = "delete from members where mem_id = ?";
 
+    console.log(id);
     conn.query(sql, [id], function(err, row){
+        console.log(row);
         if(id == row.mem_id){
             checkExit.check = 'true';
-            console.log(d + "탈퇴성공");             
+            console.log(id + "탈퇴성공");             
         } else{
             checkExit.check = 'false';
             console.log("Exit : 탈퇴실패"+err);
