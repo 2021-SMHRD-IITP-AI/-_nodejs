@@ -255,7 +255,7 @@ router.post("/FindID", function(request, response){
     conn.end();
 });
 
-router.post("/Exit", function(request, response){
+router.post("/Exit", function(request, response){ // 되다가 안됨.......
     let id = request.body.id;
 
     const conn = mysql.createConnection({
@@ -268,12 +268,13 @@ router.post("/Exit", function(request, response){
 
     let checkExit = {'check':'NO'};
 
-    let sql = "delete from members where mem_id = ?";
+    let sql = "select * from members where mem_id = ?";
 
-    console.log(id);
     conn.query(sql, [id], function(err, row){
-        console.log(row);
-        if(id == row.mem_id){
+        if(id == row[0].mem_id){
+            let del_sql = "delete from members where mem_id = ?";
+            conn.query(del_sql, [id], function(err, row){
+            })
             checkExit.check = 'true';
             console.log(id + "탈퇴성공");             
         } else{
