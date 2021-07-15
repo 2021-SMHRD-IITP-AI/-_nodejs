@@ -72,7 +72,7 @@ router.post("/Join", function(request, response){
         if(!err){
             if(id !== ""){
                 checkJoin.check = 'true';
-                console.log(id + "가입성공"+row[0].mem_status);             
+                console.log(id + "가입성공");             
             } else{
                 checkJoin.check = 'false';
                 console.log("Join: 가입실패"+err);
@@ -114,12 +114,12 @@ router.post("/NoteIn", function(request, response){
     let note_workout = request.body.note_workout;
     let note_health = request.body.note_health;
     let note_text = request.body.note_text;
-    let id = request.body.mem_id;
+    let id = request.body.id;
 
     console.log(request.body.note_workout +"앱에서 보낸 운동여부");
     console.log(request.body.note_health +"앱에서 보낸 건강상태");
     console.log(request.body.note_text +"앱에서 보낸 건강일지");
-    console.log(request.body.mem_id +"앱에서 보낸 아이디");
+    console.log(request.body.id +"앱에서 보낸 아이디");
         
     let check = {'check':'NO'};
 
@@ -131,7 +131,7 @@ router.post("/NoteIn", function(request, response){
         database : "one_project_db"
     });
 
-    let sql = "insert into notepad(note_workout, note_health, note_text, mem_id) values (?, ?, ?, now(), ?)";
+    let sql = "insert into notepad(note_workout, note_health, note_text, note_date, mem_id) values (?, ?, ?, now(), ?)";
 
     conn.query(sql, [note_workout, note_health, note_text, id], function(err, row){
         console.log("NoteIn"+ row);
@@ -257,7 +257,6 @@ router.post("/FindID", function(request, response){
 
 router.post("/Exit", function(request, response){
     let id = request.body.id;
-    let pw = request.body.pw;
 
     const conn = mysql.createConnection({
         host : "localhost",
@@ -272,7 +271,7 @@ router.post("/Exit", function(request, response){
     let sql = "delete from members where mem_id = ?;";
 
     conn.query(sql, [id], function(err, row){
-        if(id == row.mem_id && pw == row.mem_pw){
+        if(id == row.mem_id){
             checkExit.check = 'true';
             console.log(d + "탈퇴성공");             
         } else{
