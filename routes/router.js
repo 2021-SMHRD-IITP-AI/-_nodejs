@@ -255,6 +255,35 @@ router.post("/FindID", function(request, response){
     conn.end();
 });
 
+router.post("/Exit", function(request, response){
+    let id = request.body.id;
+    let pw = request.body.pw;
+
+    const conn = mysql.createConnection({
+        host : "localhost",
+        user : "root",
+        password : "1234",
+        port : "3306",
+        database : "one_project_db"
+    });
+
+    let checkExit = {'check':'NO'};
+
+    let sql = "delete from members where mem_id = ?;";
+
+    conn.query(sql, [id], function(err, row){
+        if(id == row.mem_id && pw == row.mem_pw){
+            checkExit.check = 'true';
+            console.log(d + "탈퇴성공");             
+        } else{
+            checkExit.check = 'false';
+            console.log("Exit : 탈퇴실패"+err);
+        }
+        response.send(checkExit);
+    });
+    conn.end();
+});
+
 router.get("/Ingre", function(request, response){
 
     const conn = mysql.createConnection({
