@@ -90,6 +90,8 @@ router.post("/Join", function(request, response){
 });
 
 router.post("/Dise", function(request, response){
+    let status = request.body.status;
+
     const conn = mysql.createConnection({
         host : "localhost",
         user : "root",
@@ -98,20 +100,25 @@ router.post("/Dise", function(request, response){
         database : "one_project_db"
     });
 
-    let sql = "select * from disease"
+    let sql = "select * from disease where dise_name = ?";
 
-    conn.query(sql, function(err, row){
+    console.log(status);
+    conn.query(sql, [status], function(err, row){
         let diseData = new Object();
-        diseData.recom = row[2].dise_recom;
-        diseData.warn = row[2].dise_warn;
 
-        if(!err){
-            console.log(diseData);
+            if(status == "고혈압"){
+                diseData.recom = row[0].dise_recom;
+                diseData.warn = row[0].dise_warn;
+            } else if(status == "당뇨"){
+                diseData.recom = row[0].dise_recom;
+                diseData.warn = row[0].dise_warn;
+            } else if(status == "지방"){
+                diseData.recom = row[0].dise_recom;
+                diseData.warn = row[0].dise_warn;
+            }
             response.send(diseData);
             console.log("Dise : 조회성공");
-        } else{
-            console.log("Dise : 조회실패"+err);
-        }
+
     });
     conn.end();
 });
@@ -274,7 +281,7 @@ router.post("/Exit", function(request, response){ // 되다가 안됨....... 성
     conn.query(sql, [id], function(err, row){
         if(err==null){
             checkExit.check = 'true';
-            console.log(id + "탈퇴성공");             
+                console.log(id + "탈퇴성공");             
             
             response.send(checkExit);
         }else{
