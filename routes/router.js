@@ -33,6 +33,7 @@ router.post("/Login", function(request, response){
             memberdto.tel = row[0].mem_tel;
             memberdto.address = row[0].mem_address;
             memberdto.email = row[0].mem_email;
+            memberdto.status = row[0].mem_status;
             let jsonData = JSON.stringify(memberdto);
             console.log(jsonData);
             if(pw == row[0].mem_pw){
@@ -101,8 +102,8 @@ router.post("/Dise", function(request, response){
 
     conn.query(sql, function(err, row){
         let diseData = new Object();
-        diseData.recom = row[0].dise_recom;
-        diseData.warn = row[0].dise_warn;
+        diseData.recom = row[2].dise_recom;
+        diseData.warn = row[2].dise_warn;
 
         if(!err){
             console.log(diseData);
@@ -255,7 +256,7 @@ router.post("/FindID", function(request, response){
     conn.end();
 });
 
-router.post("/Exit", function(request, response){ // 되다가 안됨.......
+router.post("/Exit", function(request, response){ // 되다가 안됨....... 성공뜨는데 실제 삭제가 안됨..
     let id = request.body.id;
 
     const conn = mysql.createConnection({
@@ -268,21 +269,19 @@ router.post("/Exit", function(request, response){ // 되다가 안됨.......
 
     let checkExit = {'check':'NO'};
 
-    let sql = "select * from members where mem_id = ?";
+    let sql = "delete from members where mem_id = ?";
 
     conn.query(sql, [id], function(err, row){
-        if(id == row[0].mem_id){
-            let del_sql = "delete from members where mem_id = ?";
-            conn.query(del_sql, [id], function(err, row){
-            })
+        if(err==null){
             checkExit.check = 'true';
             console.log(id + "탈퇴성공");             
-        } else{
-            checkExit.check = 'false';
-            console.log("Exit : 탈퇴실패"+err);
+            
+            response.send(checkExit);
+        }else{
+            console.log(err);
         }
-        response.send(checkExit);
     });
+
     conn.end();
 });
 
