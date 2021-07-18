@@ -263,7 +263,7 @@ router.post("/FindID", function(request, response){
     conn.end();
 });
 
-router.post("/Exit", function(request, response){ // 되다가 안됨....... 성공뜨는데 실제 삭제가 안됨..
+router.post("/Exit", function(request, response){
     let id = request.body.id;
 
     const conn = mysql.createConnection({
@@ -308,6 +308,48 @@ router.get("/Ingre", function(request, response){
         response.render("ingre", {
             in_row : row
         });
+    });
+    conn.end();
+});
+
+router.post("/Order", function(request, response){
+    let order_product = request.body.order_product;
+    let order_name = request.body.order_name;
+    let order_tel = request.body.order_tel;
+    let order_address = request.body.order_address;
+    let order_num = request.body.order_num;
+    let order_pay = request.body.order_pay;
+    let order_price = request.body.order_price;
+    let order_transInfo = request.body.order_transInfo;
+    let order_review = request.body.order_review;
+    let id = request.body.id;
+        
+    let check = {'check':'NO'};
+
+    const conn = mysql.createConnection({
+        host : "localhost",
+        user : "root",
+        password : "1234",
+        port : "3306",
+        database : "one_project_db"
+    });
+
+    let sql = "insert into orders(order_product, order_name, order_tel, order_address, order_num, order_pay, order_price, order_transInfo, order_date, order_review, mem_id) values (?, ?, ?, ?, ?, ?, ?, ?, now(), ?, ?)";
+
+    conn.query(sql, [order_product, order_name, order_tel, order_address, order_num, order_pay, order_price, order_transInfo, order_review, id], function(err, row){
+        if(!err){
+            if(row.affectedRows > 0){
+                check.check = "true";
+                console.log("Order : 입력성공");
+            } else{
+                check.check = "no";
+                console.log("Order: 입력실패"+err);
+            }                
+        } else{
+            check.check = "no";
+            console.log("Order: 입력실패"+err);
+        }
+        response.send(check);
     });
     conn.end();
 });
